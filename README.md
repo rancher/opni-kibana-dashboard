@@ -4,7 +4,7 @@
 1. git clone https://github.com/opendistro-for-elasticsearch/opendistro-build
 2. cd opendistro-build/helm/opendistro-es/
 3. helm package .
-4. helm install opendistro-es opendistro-es-1.13.1.tgz
+4. helm install opendistro-es --set elasticsearch.data.persistence.size="100Gi",elasticsearch.client.replicas=3,elasticsearch.data.replicas=3 opendistro-es-1.13.1.tgz
 ```
 
 ## setup Opni dashboard
