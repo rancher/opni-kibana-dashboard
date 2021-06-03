@@ -1,0 +1,131 @@
+PUT _opendistro/_ism/policies/log-rollover-policy
+{
+  "policy": {
+    "description": "Demonstrate a hot-warm-cold-delete workflow.",
+    "default_state": "hot",
+    "schema_version": 1,
+    "states": [{
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "1d",
+              "min_size": "20gb"
+            }
+          }
+        ],
+        "transitions": [{
+          "state_name": "warm"
+        }]
+      },
+      {
+        "name": "warm",
+        "actions": [{
+          "replica_count": {
+            "number_of_replicas": 0
+          }
+        },
+        {
+           "index_priority": {
+           "priority": 50
+           }
+        },
+        {
+          "force_merge": {
+            "max_num_segments": 1
+          }
+        },
+        {
+          "notification": {
+            "destination": {
+              "slack": {
+                "url": "https://hooks.slack.com/services/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"
+              }
+            },
+            "message_template": {
+              "source": "The index {{ctx.index}} is being transitted to warm."
+            }
+          }
+        }],
+        "transitions": [{
+          "state_name": "cold",
+          "conditions": {
+            "min_index_age": "2d"
+          }
+        }]
+      },
+      {
+        "name": "cold",
+        "actions": [
+        {
+          "read_only": {}
+        }],
+        "transitions": [{
+          "state_name": "delete",
+          "conditions": {
+             "min_index_age": "7d"
+          }
+        }]
+      },
+      {
+        "name": "delete",
+        "actions": [{
+          "notification": {
+            "destination": {
+              "slack": {
+                "url": "https://hooks.slack.com/services/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"
+              }
+            },
+            "message_template": {
+              "source": "The index {{ctx.index}} is being deleted."
+            }
+          }
+        },
+        {
+          "delete": {}
+        }]
+      }
+    ],
+    "ism_template": {
+      "index_patterns": ["logs*"],
+      "priority": 100
+    }
+  }
+}
+
+
+
+PUT _index_template/ism_rollover
+{
+  "index_patterns": ["logs*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "opendistro.index_state_management.policy_id": "log-rollover-policy",
+      "opendistro.index_state_management.rollover_alias": "logs"
+    }
+  }
+}
+
+
+PUT logs-000001
+{
+  "aliases": {
+    "logs": {
+      "is_write_index": true
+    }
+  }
+}
+
+
+
+POST logs/_doc
+{
+  "message": "dummy",
+  "timestamp": "10000000"
+}
+
+GET _opendistro/_ism/explain/logs-000001
+
+GET _cat/indices/logs*
