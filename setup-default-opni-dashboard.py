@@ -18,7 +18,7 @@ es = Elasticsearch(
     use_ssl=True,
 )
 
-# res = (es.search(index=".kibana_92668751_admin_1"))["hits"]["hits"]
+# res = (es.search(index=".kibana_1"))["hits"]["hits"]
 
 with open("default-opni-dasahboard.json", "r") as fin:
     res = json.load(fin)
