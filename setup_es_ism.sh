@@ -1,4 +1,4 @@
-PUT _opendistro/_ism/policies/log-rollover-policy
+curl -X PUT "$ES_ENDPOINT/_opendistro/_ism/policies/log-policy" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
 {
   "policy": {
     "description": "Demonstrate a hot-warm-cold-delete workflow.",
@@ -33,18 +33,6 @@ PUT _opendistro/_ism/policies/log-rollover-policy
         {
           "force_merge": {
             "max_num_segments": 1
-          }
-        },
-        {
-          "notification": {
-            "destination": {
-              "slack": {
-                "url": "https://hooks.slack.com/services/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"
-              }
-            },
-            "message_template": {
-              "source": "The index {{ctx.index}} is being transitted to warm."
-            }
           }
         }],
         "transitions": [{
@@ -92,40 +80,30 @@ PUT _opendistro/_ism/policies/log-rollover-policy
     }
   }
 }
+'
 
-
-
-PUT _index_template/ism_rollover
+curl -X PUT "$ES_ENDPOINT/_index_template/ism_rollover" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
 {
   "index_patterns": ["logs*"],
   "template": {
     "settings": {
       "number_of_shards": 2,
       "number_of_replicas": 1,
-      "opendistro.index_state_management.policy_id": "log-rollover-policy",
+      "opendistro.index_state_management.policy_id": "log-policy",
       "opendistro.index_state_management.rollover_alias": "logs"
     }
   }
-}
+}'
 
-
-PUT logs-000001
+curl -X PUT "$ES_ENDPOINT/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
 {
   "aliases": {
     "logs": {
       "is_write_index": true
     }
   }
-}
+}'
+
+curl -X GET "$ES_ENDPOINT/_opendistro/_ism/explain/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD"
 
 
-
-POST logs/_doc
-{
-  "message": "dummy",
-  "timestamp": "10000000"
-}
-
-GET _opendistro/_ism/explain/logs-000001
-
-GET _cat/indices/logs*
