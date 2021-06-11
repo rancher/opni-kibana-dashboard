@@ -59,18 +59,7 @@ curl -X PUT "$ES_ENDPOINT/_opendistro/_ism/policies/log-policy" --insecure -u "$
       },
       {
         "name": "delete",
-        "actions": [{
-          "notification": {
-            "destination": {
-              "slack": {
-                "url": "https://hooks.slack.com/services/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"
-              }
-            },
-            "message_template": {
-              "source": "The index {{ctx.index}} is being deleted."
-            }
-          }
-        },
+        "actions": [
         {
           "delete": {}
         }]
