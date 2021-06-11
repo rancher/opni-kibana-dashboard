@@ -1,3 +1,5 @@
+python setup-default-opni-dashboard.py
+
 curl -X PUT "$ES_ENDPOINT/_opendistro/_ism/policies/log-policy" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
 {
   "policy": {
