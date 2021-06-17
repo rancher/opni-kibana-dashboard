@@ -97,4 +97,7 @@ curl -X PUT "$ES_ENDPOINT/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD" -H 
 
 curl -X GET "$ES_ENDPOINT/_opendistro/_ism/explain/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD"
 
-
+curl -XPOST "$KB_ENDPOINT/api/saved_objects/_import?overwrite=true" \
+  -H "kbn-xsrf: true" -H "securitytenant: global" \
+  --form file=@control-plane-dashboard.ndjson \
+  -u "$ES_USER:$ES_PASSWORD"
