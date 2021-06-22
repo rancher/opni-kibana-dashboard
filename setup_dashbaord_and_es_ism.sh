@@ -84,14 +84,47 @@ curl -X PUT "$ES_ENDPOINT/_index_template/ism_rollover" --insecure -u "$ES_USER:
   }
 }'
 
-curl -X PUT "$ES_ENDPOINT/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
-{
-  "aliases": {
-    "logs": {
-      "is_write_index": true
+LOGS_INDEX_EXIST=$(curl -I "$ES_ENDPOINT/logs" --insecure -u "$ES_USER:$ES_PASSWORD")
+
+# $LOGS_INDEX_EXIST will look like this : HTTP/1.1 200 OK content-type: application/json; charset=UTF-8 content-length: 332
+# so then ${LOGS_INDEX_EXIST:9:3} == 200
+
+if [ ${LOGS_INDEX_EXIST:9:3} = "200" ]; then # if index "logs" exists
+  curl -X PUT "$ES_ENDPOINT/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json'
+
+  curl -X POST "$ES_ENDPOINT/_reindex" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d' 
+  {
+    "source": {
+      "index": "logs"
+    },
+    "dest": {
+      "index": "logs-000001"
     }
-  }
-}'
+  }'
+
+  curl -X POST "$ES_ENDPOINT/_aliases" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
+  {
+    "actions" : [
+      {
+        "add": {
+          "index": "logs-000001",
+          "alias": "logs",
+          "is_write_index": true
+        }
+      },
+      { "remove_index": { "index": "logs" } }  
+    ]
+  }'
+else
+  curl -X PUT "$ES_ENDPOINT/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
+  {
+    "aliases": {
+      "logs": {
+        "is_write_index": true
+      }
+    }
+  }'
+fi
 
 curl -X GET "$ES_ENDPOINT/_opendistro/_ism/explain/logs-000001" --insecure -u "$ES_USER:$ES_PASSWORD"
 
