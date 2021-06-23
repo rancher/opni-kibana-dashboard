@@ -71,7 +71,7 @@ curl -X PUT "$ES_ENDPOINT/_opendistro/_ism/policies/log-policy" --insecure -u "$
 }
 '
 
-curl -X PUT "$ES_ENDPOINT/_index_template/ism_rollover" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
+curl -X PUT "$ES_ENDPOINT/_index_template/logs_rollover_mapping" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
 {
   "index_patterns": ["logs*"],
   "template": {
@@ -80,6 +80,13 @@ curl -X PUT "$ES_ENDPOINT/_index_template/ism_rollover" --insecure -u "$ES_USER:
       "number_of_replicas": 1,
       "opendistro.index_state_management.policy_id": "log-policy",
       "opendistro.index_state_management.rollover_alias": "logs"
+    },
+    "mappings": {
+      "properties": {
+        "timestamp": {
+          "type": "date"
+        }
+      }
     }
   }
 }'
