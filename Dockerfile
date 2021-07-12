@@ -4,4 +4,4 @@ COPY ./ /app/
 
 WORKDIR /app
 
-CMD ["sh", "setup_dashbaord_and_es_ism.sh"]
+CMD ["sh", "setup_dashboard_and_es_ism.sh"]
