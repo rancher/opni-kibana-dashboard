@@ -267,3 +267,19 @@ curl -X PUT "$ES_ENDPOINT/opni-drain-model-status-000001" --insecure -u "$ES_USE
 }
 '
 
+curl -X PUT "$ES_ENDPOINT/opni-normal-intervals" --insecure -u "$ES_USER:$ES_PASSWORD" -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "properties": {
+      "start_ts": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+      "end_ts": {
+        "type": "date",
+        "format": "epoch_millis"
+      }
+    }
+  }
+}
+'
